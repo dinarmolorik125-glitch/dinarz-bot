@@ -46,7 +46,7 @@ def remove_button():
     )
 
 
-async def remove_background(data):
+             def remove_background(data):
     result = remove(data, session=session)
 
     image = Image.open(BytesIO(result)).convert("RGBA")
