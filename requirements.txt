@@ -1,0 +1,5 @@
+aiogram>=3.20,<4
+rembg[cpu]>=2.0.67
+Pillow>=10.0
+onnxruntime>=1.18
+aiohttp>=3.9
