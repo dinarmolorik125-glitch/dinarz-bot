@@ -11,7 +11,7 @@ from aiogram.types import (
     CallbackQuery,
     BufferedInputFile,
     InlineKeyboardMarkup,
-    InlineKeyboardButton
+    InlineKeyboardButton,
 )
 from rembg import remove, new_session
 from PIL import Image
@@ -39,14 +39,14 @@ def remove_button():
             [
                 InlineKeyboardButton(
                     text="✂️ УБРАТЬ ФОН",
-                    callback_data="remove_bg"
+                    callback_data="remove_bg",
                 )
             ]
         ]
     )
 
 
-             def remove_background(data):
+def remove_background(data):
     result = remove(data, session=session)
 
     image = Image.open(BytesIO(result)).convert("RGBA")
@@ -75,7 +75,7 @@ async def start_web_server():
     site = web.TCPSite(
         runner,
         "0.0.0.0",
-        port
+        port,
     )
 
     await site.start()
@@ -85,7 +85,6 @@ async def start_web_server():
 
 @dp.message(CommandStart())
 async def start(message: Message):
-
     await message.answer(
         "🤖 <b>DINARZ BOT</b>\n\n"
         "Привет!\n\n"
@@ -93,13 +92,12 @@ async def start(message: Message):
         "✂️ Я уберу фон.\n"
         "🖼️ Верну прозрачный PNG.\n\n"
         "С любовью от DINAUZ ❤️",
-        parse_mode="HTML"
+        parse_mode="HTML",
     )
 
 
 @dp.message(Command("help"))
 async def help_command(message: Message):
-
     await message.answer(
         "📸 Просто отправь фотографию.\n\n"
         "После этого появится кнопка "
@@ -109,7 +107,6 @@ async def help_command(message: Message):
 
 @dp.message(F.photo)
 async def photo_received(message: Message):
-
     photo = message.photo[-1]
 
     pending_photos[message.chat.id] = photo.file_id
@@ -118,13 +115,12 @@ async def photo_received(message: Message):
         "📸 <b>Фото получил!</b>\n\n"
         "Теперь нажми кнопку ниже 👇",
         parse_mode="HTML",
-        reply_markup=remove_button()
+        reply_markup=remove_button(),
     )
 
 
 @dp.callback_query(F.data == "remove_bg")
 async def remove_bg(callback: CallbackQuery):
-
     await callback.answer()
 
     chat_id = callback.message.chat.id
@@ -132,11 +128,9 @@ async def remove_bg(callback: CallbackQuery):
     file_id = pending_photos.get(chat_id)
 
     if not file_id:
-
         await callback.message.answer(
             "📸 Сначала отправь фотографию."
         )
-
         return
 
     status = await callback.message.answer(
@@ -144,14 +138,13 @@ async def remove_bg(callback: CallbackQuery):
     )
 
     try:
-
         telegram_file = await bot.get_file(file_id)
 
         data = BytesIO()
 
         await bot.download_file(
             telegram_file.file_path,
-            data
+            data,
         )
 
         await status.edit_text(
@@ -161,29 +154,27 @@ async def remove_bg(callback: CallbackQuery):
 
         result = await asyncio.to_thread(
             remove_background,
-            data.getvalue()
+            data.getvalue(),
         )
 
         await status.delete()
 
         await callback.message.answer_document(
-
             BufferedInputFile(
                 result,
-                filename="DINARZ_BOT.png"
+                filename="DINARZ_BOT.png",
             ),
-
             caption=(
                 "✨ <b>Ваше фото готово!</b>\n\n"
                 "Формат: прозрачный PNG\n\n"
                 "С любовью от DINAUZ ❤️"
             ),
-
-            parse_mode="HTML"
+            parse_mode="HTML",
         )
 
-    except Exception as error:
+        pending_photos.pop(chat_id, None)
 
+    except Exception as error:
         logging.exception(error)
 
         await status.edit_text(
@@ -194,7 +185,6 @@ async def remove_bg(callback: CallbackQuery):
 
 @dp.message()
 async def other_message(message: Message):
-
     await message.answer(
         "📸 Отправь мне фотографию, "
         "и я уберу с неё фон."
@@ -202,7 +192,6 @@ async def other_message(message: Message):
 
 
 async def main():
-
     await start_web_server()
 
     print("DINARZ BOT запущен!")
@@ -211,5 +200,4 @@ async def main():
 
 
 if __name__ == "__main__":
-
     asyncio.run(main())
